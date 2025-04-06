@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.DuplicatedDataException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -52,25 +51,25 @@ public class FilmController {
         Film oldFilm = films.get(newFilm.getId());
 
         if (Objects.nonNull(newFilm.getName())) {
-            if(!isValidName(newFilm)) {
+            if (!isValidName(newFilm)) {
                 nameException();
             }
             oldFilm.setName(newFilm.getName());
         }
         if (Objects.nonNull(newFilm.getDescription())) {
-            if(!isValidDescription(newFilm)) {
+            if (!isValidDescription(newFilm)) {
                 descriptionException();
             }
             oldFilm.setDescription(newFilm.getDescription());
         }
         if (Objects.nonNull(newFilm.getReleaseDate())) {
-            if(!isValidRelease(newFilm)) {
+            if (!isValidRelease(newFilm)) {
                 releaseException();
             }
             oldFilm.setReleaseDate(newFilm.getReleaseDate());
         }
         if (Objects.nonNull(newFilm.getDuration())) {
-            if(!isValidDuration(newFilm)) {
+            if (!isValidDuration(newFilm)) {
                 durationException();
             }
             oldFilm.setDuration(newFilm.getDuration());
@@ -125,12 +124,11 @@ public class FilmController {
     private void durationException() {
         String message = "Продолжительность должна быть больше 0.";
         log.warn(message);
-        throw new DuplicatedDataException(message);
+        throw new ValidationException(message);
     }
 
-
     private boolean isValidName(Film film) {
-        return Objects.nonNull(film.getName());
+        return Objects.nonNull(film.getName()) && !film.getName().isBlank();
     }
 
     private boolean isValidDescription(Film film) {
