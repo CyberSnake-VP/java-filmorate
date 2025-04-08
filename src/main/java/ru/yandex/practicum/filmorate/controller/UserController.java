@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,31 +16,53 @@ import java.util.Objects;
 @RestController
 @RequestMapping("/users")
 @Slf4j
-public class UserController implements Controller {
+public class UserController {
 
     // Таблица для хранения наших пользователей по email
     Map<Long, User> users = new HashMap<>();
 
-    @Override
+    @GetMapping
     public Collection<User> getAll() {
         log.info("Список пользователей успешно отправлен");
         return users.values();
     }
 
-    @Override
-    public User create(User user) {
+    @PostMapping
+    public User create(@Valid @RequestBody User user) {
+        processCreate(user);
+        log.info("Пользователь успешно добавлен в список");
+        return user;
+    }
+
+    @PutMapping
+    public User update(@Valid @RequestBody User newUser) {
+        log.info("Обновление данных пользователя {} c id {}", newUser, newUser.getId());
+        User oldUser = processUpdate(newUser);
+        log.info("Данные пользователя с id {} успешно обновлены.", newUser.getId());
+        return oldUser;
+    }
+
+    // Метод для получения id, получаем максимальный ключ-id нашей таблицы пользователей, увеличиваем его на 1
+    // если это первый ключ, то записываем значение 1
+    private Long getNextId() {
+        long nextId = users.keySet().stream()
+                .mapToLong(id -> id)
+                .max()
+                .orElse(0);
+        return ++nextId;
+    }
+
+    // Создание и добавление пользователя в таблицу, при прохождении валидации. Если имя не указано, будет записан логин.
+    private void processCreate(@Valid User user) {
         log.info("Добавление пользователя {}.", user);
         user.setId(getNextId());
         if(Objects.isNull(user.getName()) || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
         users.put(user.getId(), user);
-        log.info("Пользователь успешно добавлен в список");
-        return user;
     }
 
-    @Override
-    public User update(User newUser) {
+    private User processUpdate(@Valid User newUser) {
         Long id = newUser.getId();
         if (Objects.isNull(id)) {
             String message = "id должен быть указан.";
@@ -47,12 +70,12 @@ public class UserController implements Controller {
             throw new ValidationException(message);
         }
         if (!users.containsKey(id)) {
-            String message = String.format("Пользователь с id %d, не найден.", newUser.getId());
+            String message = String.format("Пользователь с id %d, не найден.", id);
             log.warn(message);
             throw new NotFoundException(message);
         }
 
-        User oldUser = users.get(newUser.getId());
+        User oldUser = users.get(id);
 
         if(newUser.getEmail() != null) {
             oldUser.setEmail(newUser.getEmail());
@@ -66,18 +89,9 @@ public class UserController implements Controller {
         if(newUser.getBirthday() != null) {
             oldUser.setBirthday(newUser.getBirthday());
         }
+
         users.put(id, oldUser);
-        log.info("Данные пользователя с id {} успешно обновлены.", id);
         return oldUser;
     }
 
-    // метод для получения id, получаем максимальный ключ-id нашей таблицы пользователей, увеличиваем его на 1
-    // если это первый ключ, то записываем значение 1
-    private Long getNextId() {
-        long nextId = users.keySet().stream()
-                .mapToLong(id -> id)
-                .max()
-                .orElse(0);
-        return ++nextId;
-    }
 }
