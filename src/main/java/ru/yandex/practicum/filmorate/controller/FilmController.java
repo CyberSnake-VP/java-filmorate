@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
@@ -25,17 +26,28 @@ public class FilmController {
     }
 
     @PostMapping
-    public Film create(@RequestBody Film film) {
+    public Film create(@Valid @RequestBody Film film) {
         log.info("Добавление фильма. {}", film);
-        validateForCreate(film);
-        film.setId(getNextId());
-        films.put(film.getId(), film);
+        processCreate(film);
         log.info("Фильм с id {} успешно добавлен.", film.getId());
         return film;
     }
 
     @PutMapping
-    public Film update(@RequestBody Film newFilm) {
+    public Film update(@Valid @RequestBody Film newFilm) {
+        log.info("Обновление данных фильма {} c id {}", newFilm, newFilm.getId());
+        Film oldFilm = processUpdate(newFilm);
+        log.info("Данные фильма с id {} успешны обновлены.", oldFilm.getId());
+        return oldFilm;
+    }
+
+    private void processCreate(@Valid Film film) {
+        validRelease(film);
+        film.setId(getNextId());
+        films.put(film.getId(), film);
+    }
+
+    private Film processUpdate(@Valid Film newFilm) {
         Long id = newFilm.getId();
         if (Objects.isNull(id)) {
             String message = "id должен быть указан.";
@@ -43,41 +55,30 @@ public class FilmController {
             throw new ValidationException(message);
         }
         if (!films.containsKey(id)) {
-            String message = String.format("Фильм с id %d, не найден.", newFilm.getId());
+            String message = String.format("Фильм с id %d, не найден.", id);
             log.warn(message);
             throw new NotFoundException(message);
         }
+        // Проверяем дату релиза, чтобы не раньше 1895-12-28 числа.
+        validRelease(newFilm);
 
-        Film oldFilm = films.get(newFilm.getId());
+        Film oldFilm = films.get(id);
 
-        if (Objects.nonNull(newFilm.getName())) {
-            if (!isValidName(newFilm)) {
-                nameException();
-            }
+        if (newFilm.getName() != null) {
             oldFilm.setName(newFilm.getName());
         }
-        if (Objects.nonNull(newFilm.getDescription())) {
-            if (!isValidDescription(newFilm)) {
-                descriptionException();
-            }
+        if (newFilm.getDescription() != null) {
             oldFilm.setDescription(newFilm.getDescription());
         }
-        if (Objects.nonNull(newFilm.getReleaseDate())) {
-            if (!isValidRelease(newFilm)) {
-                releaseException();
-            }
+        if (newFilm.getReleaseDate() != null) {
             oldFilm.setReleaseDate(newFilm.getReleaseDate());
         }
-        if (Objects.nonNull(newFilm.getDuration())) {
-            if (!isValidDuration(newFilm)) {
-                durationException();
-            }
+        if (newFilm.getDuration() != null) {
             oldFilm.setDuration(newFilm.getDuration());
         }
-        log.info("Данные фильма с id {} успешны обновлены.", oldFilm.getId());
+        films.put(id, oldFilm);
         return oldFilm;
     }
-
 
     private Long getNextId() {
         long nextId = films.keySet().stream()
@@ -86,62 +87,17 @@ public class FilmController {
                 .orElse(0);
         return ++nextId;
     }
-
-    private void validateForCreate(Film film) {
-        if (!isValidName(film)) {
-            nameException();
-        }
-        if (!isValidDescription(film)) {
-            descriptionException();
-        }
-        if (!isValidRelease(film)) {
-            releaseException();
-        }
-        if (!isValidDuration(film)) {
-            durationException();
-        }
-        log.info("Фильм {} прошел валидацию.", film);
-    }
-
-    private void nameException() {
-        String message = "Название должно быть заполнено.";
-        log.warn(message);
-        throw new ValidationException(message);
-    }
-
-    private void descriptionException() {
-        String message = "Описание не должно превышать 200 символов.";
-        log.warn(message);
-        throw new ValidationException(message);
-    }
-
-    private void releaseException() {
-        String message = "Дата создания указана неверно.";
-        log.warn(message);
-        throw new ValidationException(message);
-    }
-
-    private void durationException() {
-        String message = "Продолжительность должна быть больше 0.";
-        log.warn(message);
-        throw new ValidationException(message);
-    }
-
-    private boolean isValidName(Film film) {
-        return Objects.nonNull(film.getName()) && !film.getName().isBlank();
-    }
-
-    private boolean isValidDescription(Film film) {
-        int numberOfChar = 200;
-        return (Objects.isNull(film.getDescription())) ? true : film.getDescription().length() <= numberOfChar;
-    }
-
+    // Функциональность для метода валидации validRelease
     private boolean isValidRelease(Film film) {
-        return (Objects.isNull(film.getReleaseDate())) ? true : film.getReleaseDate().isAfter(LocalDate.of(1895, 12, 28));
+        return Objects.isNull(film.getReleaseDate()) || film.getReleaseDate().isAfter(LocalDate.of(1895, 12, 28));
     }
-
-    private boolean isValidDuration(Film film) {
-        return (Objects.isNull(film.getDuration())) ? true : film.getDuration() > 0;
+    // Валидация даты релиза.
+    private void validRelease(Film film) {
+        if (!isValidRelease(film)) {
+            String message = "Дата выходы не может быть раньше 1895-12-28";
+            log.warn(message);
+            throw new ValidationException(message);
+        }
     }
 
 }

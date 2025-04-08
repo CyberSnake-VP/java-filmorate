@@ -7,6 +7,7 @@ import java.time.LocalDate;
 
 @Data
 public class User {
+    @Positive(message = "Id должен быть положительным числом.")
     private Long id;
 
     @NotEmpty(message = "Email должен быть указан.")
