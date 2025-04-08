@@ -47,6 +47,10 @@ public class FilmController {
         films.put(film.getId(), film);
     }
 
+    /**
+      Метод для обновления, проверяем id, на null и в качестве ключа к таблице.
+      Получаем из таблицы фильм, меняем ему поля, если поля были указны в Json и прошли валидацию.
+     */
     private Film processUpdate(@Valid Film newFilm) {
         Long id = newFilm.getId();
         if (Objects.isNull(id)) {
@@ -87,10 +91,12 @@ public class FilmController {
                 .orElse(0);
         return ++nextId;
     }
+
     // Функциональность для метода валидации validRelease
     private boolean isValidRelease(Film film) {
         return Objects.isNull(film.getReleaseDate()) || film.getReleaseDate().isAfter(LocalDate.of(1895, 12, 28));
     }
+
     // Валидация даты релиза.
     private void validRelease(Film film) {
         if (!isValidRelease(film)) {
