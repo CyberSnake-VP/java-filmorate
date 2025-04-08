@@ -56,12 +56,16 @@ public class UserController {
     private void processCreate(@Valid User user) {
         log.info("Добавление пользователя {}.", user);
         user.setId(getNextId());
-        if(Objects.isNull(user.getName()) || user.getName().isBlank()) {
+        if (Objects.isNull(user.getName()) || user.getName().isBlank()) {
             user.setName(user.getLogin());
         }
         users.put(user.getId(), user);
     }
 
+    /**
+       Метод для обновления, проверяем id, на null и в качестве ключа к таблице.
+       Получаем из таблицы пользователя, меняем ему поля, если поля были указны в Json и прошли валидацию.
+     */
     private User processUpdate(@Valid User newUser) {
         Long id = newUser.getId();
         if (Objects.isNull(id)) {
@@ -77,16 +81,16 @@ public class UserController {
 
         User oldUser = users.get(id);
 
-        if(newUser.getEmail() != null) {
+        if (newUser.getEmail() != null) {
             oldUser.setEmail(newUser.getEmail());
         }
-        if(newUser.getLogin() != null) {
+        if (newUser.getLogin() != null) {
             oldUser.setLogin(newUser.getLogin());
         }
-        if(newUser.getName() != null) {
+        if (newUser.getName() != null) {
             oldUser.setName(newUser.getName());
         }
-        if(newUser.getBirthday() != null) {
+        if (newUser.getBirthday() != null) {
             oldUser.setBirthday(newUser.getBirthday());
         }
 
