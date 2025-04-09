@@ -19,7 +19,7 @@ import java.util.Objects;
 public class UserController {
 
     // Таблица для хранения наших пользователей по email
-    Map<Long, User> users = new HashMap<>();
+    private final Map<Long, User> users = new HashMap<>();
 
     @GetMapping
     public Collection<User> getAll() {
@@ -53,7 +53,7 @@ public class UserController {
     }
 
     // Создание и добавление пользователя в таблицу, при прохождении валидации. Если имя не указано, будет записан логин.
-    private void processCreate(@Valid User user) {
+    private void processCreate(User user) {
         log.info("Добавление пользователя {}.", user);
         user.setId(getNextId());
         if (Objects.isNull(user.getName()) || user.getName().isBlank()) {
@@ -66,7 +66,7 @@ public class UserController {
        Метод для обновления, проверяем id, на null и в качестве ключа к таблице.
        Получаем из таблицы пользователя, меняем ему поля, если поля были указны в Json и прошли валидацию.
      */
-    private User processUpdate(@Valid User newUser) {
+    private User processUpdate(User newUser) {
         Long id = newUser.getId();
         if (Objects.isNull(id)) {
             String message = "id должен быть указан.";
