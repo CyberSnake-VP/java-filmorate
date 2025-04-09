@@ -18,7 +18,7 @@ import java.util.Objects;
 @Slf4j
 public class FilmController {
     // таблица для хранения фильмов
-    Map<Long, Film> films = new HashMap<>();
+    private final Map<Long, Film> films = new HashMap<>();
 
     @GetMapping
     public Collection<Film> getAll() {
@@ -41,7 +41,7 @@ public class FilmController {
         return oldFilm;
     }
 
-    private void processCreate(@Valid Film film) {
+    private void processCreate(Film film) {
         validRelease(film);
         film.setId(getNextId());
         films.put(film.getId(), film);
@@ -51,7 +51,7 @@ public class FilmController {
       Метод для обновления, проверяем id, на null и в качестве ключа к таблице.
       Получаем из таблицы фильм, меняем ему поля, если поля были указны в Json и прошли валидацию.
      */
-    private Film processUpdate(@Valid Film newFilm) {
+    private Film processUpdate(Film newFilm) {
         Long id = newFilm.getId();
         if (Objects.isNull(id)) {
             String message = "id должен быть указан.";
