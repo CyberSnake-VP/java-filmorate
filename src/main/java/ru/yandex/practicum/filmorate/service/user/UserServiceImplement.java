@@ -9,10 +9,7 @@ import ru.yandex.practicum.filmorate.storage.film.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.user.UserStorage;
 import ru.yandex.practicum.filmorate.validate.UserValidate;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -70,12 +67,38 @@ public class UserServiceImplement implements UserService {
         User user = userStorage.getById(userId);
         log.debug("Получаем список id пользователей.");
         Set<Long> idSet = user.getFriends();
-        if(idSet.isEmpty()) {
+        if (idSet.isEmpty()) {
             log.debug("Список пользователя пуст, отправляем пустой список.");
             return List.of();
         }
         log.debug("Возвращаем список друзей пользователя.");
         return idSet.stream()
+                .map(userStorage::getById)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Collection<User> getCommonFriends(Long userId, Long otherId) {
+        log.info("Получение списка общих друзей пользователя.");
+        log.debug("Получаем пользователя.");
+        User user = userStorage.getById(userId);
+        User ohterUser = userStorage.getById(otherId);
+        log.debug("Получение списка id пользователей.");
+        Set<Long> idSetUser = user.getFriends();
+        Set<Long> idSetOther = ohterUser.getFriends();
+        if (idSetUser.isEmpty() || idSetOther.isEmpty()) {
+            log.debug("Отправляем пустой список.");
+            return List.of();
+        }
+        log.debug("Создание множества и получение пересечения.");
+        Set<Long> commonFriends = new HashSet<>(idSetUser);
+        commonFriends.retainAll(idSetOther);
+        if (commonFriends.isEmpty()) {
+            log.debug("Нет пересечения, отправляем пустой список.");
+            return List.of();
+        }
+        log.debug("Возвращаем список общих друзей пользователя.");
+        return commonFriends.stream()
                 .map(userStorage::getById)
                 .collect(Collectors.toList());
     }

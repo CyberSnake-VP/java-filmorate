@@ -37,6 +37,12 @@ public class UserController {
         return userService.getAllFriends(id);
     }
 
+    @GetMapping("{id}/friends/common/{otherId}")
+    public Collection<User> getCommonFriends(@PathVariable("id") @Min(1) @Positive Long id,
+                                             @PathVariable("otherId") @Min(1) @Positive Long otherId) {
+        return userService.getCommonFriends(id, otherId);
+    }
+
     @PostMapping
     public User create(@Valid @RequestBody User user) {
         return userService.create(user);
