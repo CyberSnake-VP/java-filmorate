@@ -12,4 +12,10 @@ public interface FilmService {
     Collection<Film> getAll();
 
     Film getById(Long filmId);
+
+    Film addLike(Long id, Long userId);
+
+    Film deleteLike(Long id, Long userId);
+
+    Collection<Film> getPopular (Long count);
 }
