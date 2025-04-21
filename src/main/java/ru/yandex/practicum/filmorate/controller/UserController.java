@@ -27,9 +27,14 @@ public class UserController {
         return userService.getAll();
     }
 
-    @GetMapping("{userId}")
-    public User getById(@PathVariable(value = "userId", required = false) @Min(1) @Positive Long userId) {
-        return userService.getById(userId);
+    @GetMapping("{id}")
+    public User getById(@PathVariable(value = "id", required = false) @Min(1) @Positive Long id) {
+        return userService.getById(id);
+    }
+
+    @GetMapping("{id}/friends")
+    public Collection<User> getAllFriends(@PathVariable("id") @Min(1) @Positive Long id) {
+        return userService.getAllFriends(id);
     }
 
     @PostMapping
@@ -42,9 +47,16 @@ public class UserController {
         return userService.update(newUser);
     }
 
-    @PutMapping("{userId}/friends/{friendId}")
-    public User addFriend(@PathVariable("userId") @Min(1) @Positive Long userId,
+    @PutMapping("{id}/friends/{friendId}")
+    public User addFriend(@PathVariable("id") @Min(1) @Positive Long userId,
                           @PathVariable("friendId") @Min(1) @Positive Long friendId) {
         return userService.addFriend(userId, friendId);
     }
+
+    @DeleteMapping("{userId}/friends/{friendId}")
+    public User deleteFriend(@PathVariable("userId") @Min(1) @Positive Long userId,
+                             @PathVariable("friendId") @Min(1) @Positive Long friendId) {
+        return userService.deleteFriend(userId, friendId);
+    }
+
 }
