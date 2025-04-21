@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.storage;
+package ru.yandex.practicum.filmorate.storage.film;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -72,6 +72,18 @@ public class InMemoryFilmStorage implements FilmStorage{
         return films.values();
     }
 
+    @Override
+    public Film getById(Long filmId) {
+       return films.values().stream()
+                .filter(film -> Objects.equals(filmId, film.getId()))
+                .findFirst()
+                .orElseThrow(()-> {
+                    String errorMessage = String.format("Фильм с id %d не найден.", filmId);
+                    log.warn(errorMessage);
+                    return new NotFoundException(errorMessage);
+                });
+    }
+
 
     // Функциональность для метода валидации validRelease
     private boolean isValidRelease(Film film) {
@@ -94,4 +106,5 @@ public class InMemoryFilmStorage implements FilmStorage{
                 .orElse(0);
         return ++nextId;
     }
+
 }
