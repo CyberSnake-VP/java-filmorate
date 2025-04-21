@@ -11,7 +11,7 @@ import java.util.Objects;
 
 @Component
 @Slf4j
-public class UserValidate implements Validate{
+public class UserValidate implements Validate {
 
     @Override
     public void isExist(boolean existing, Long id) {
@@ -30,16 +30,30 @@ public class UserValidate implements Validate{
             throw new ValidationException(message);
         }
     }
+
     // Проверка пользователя на уникальность email адреса, для избежания повторного добавления.
-    public void isRepeated(Map<Long, User> users, User user) {
+    public void isRepeat(Map<Long, User> users, User user) {
         String email = user.getEmail();
-        users.values().stream()
-                .filter(userInMap -> userInMap.getEmail().equals(email))
-                .findFirst()
-                .orElseThrow(()-> {
-                    String errorMessage = String.format("Пользователь с таким email %s существует.", email);
-                    log.warn(errorMessage);
+        boolean isExist = users.values().stream()
+                .map(User::getEmail)
+                .anyMatch(email::equals);
+
+        if (isExist) {
+            String errorMessage = String.format("Пользователь с email %s адресом уже существует.", email);
+            log.warn(errorMessage);
+            throw new ValidationException(errorMessage);
+        }
+    }
+
+    // Проверка пользователей на нахождение в списке друзей.
+    public void isRepeatFriend(User user, Long friendId) {
+        user.getFriends().stream()
+                .filter(id -> Objects.equals(id, friendId))
+                .findFirst().orElseThrow(() -> {
+                    String errorMessage = String.format(
+                            "Пользователь с id %d не находится в друзьях пользователя с id %d", user.getId(), friendId);
                     return new ValidationException(errorMessage);
                 });
+
     }
 }

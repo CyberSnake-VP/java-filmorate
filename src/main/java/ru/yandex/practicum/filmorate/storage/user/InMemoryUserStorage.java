@@ -1,11 +1,8 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
-import io.micrometer.observation.annotation.Observed;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.validate.UserValidate;
 
@@ -24,7 +21,7 @@ public class InMemoryUserStorage implements UserStorage{
     public User create(User user) {
         log.info("Добавление пользователя {}.", user);
         log.debug("Проверка пользователя с email {} на повторное добавление.", user.getEmail());
-        validate.isRepeated(users, user);
+        validate.isRepeat(users, user);
         user.setId(getNextId());
         if (Objects.isNull(user.getName()) || user.getName().isBlank()) {
             user.setName(user.getLogin());
