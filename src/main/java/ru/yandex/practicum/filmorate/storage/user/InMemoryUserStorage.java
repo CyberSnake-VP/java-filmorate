@@ -1,24 +1,30 @@
 package ru.yandex.practicum.filmorate.storage.user;
 
 import io.micrometer.observation.annotation.Observed;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.validate.UserValidate;
 
 import java.util.*;
 
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class InMemoryUserStorage implements UserStorage{
     // Таблица для хранения наших пользователей по email
     private final Map<Long, User> users = new HashMap<>();
+    private final UserValidate validate;
 
     // Создание и добавление пользователя в таблицу, при прохождении валидации. Если имя не указано, будет записан логин.
     @Override
     public User create(User user) {
         log.info("Добавление пользователя {}.", user);
+        log.debug("Проверка пользователя с email {} на повторное добавление.", user.getEmail());
+        validate.isRepeated(users, user);
         user.setId(getNextId());
         if (Objects.isNull(user.getName()) || user.getName().isBlank()) {
             user.setName(user.getLogin());
@@ -36,16 +42,11 @@ public class InMemoryUserStorage implements UserStorage{
     public User update(User newUser) {
         log.info("Обновление данных пользователя {} c id {}", newUser, newUser.getId());
         Long id = newUser.getId();
-        if (Objects.isNull(id)) {
-            String message = "id должен быть указан.";
-            log.warn(message);
-            throw new ValidationException(message);
-        }
-        if (!users.containsKey(id)) {
-            String message = String.format("Пользователь с id %d, не найден.", id);
-            log.warn(message);
-            throw new NotFoundException(message);
-        }
+
+        log.debug("Валидация на Null c id {}", id);
+        validate.isNull(id);
+        log.debug("Проверка id {} на существование в таблице.", id);
+        validate.isExist(users.containsKey(id), id);
 
         User oldUser = users.get(id);
 
@@ -85,13 +86,7 @@ public class InMemoryUserStorage implements UserStorage{
 
     @Override
     public User getById(Long userId) {
-       return users.values().stream()
-                .filter(user -> Objects.equals(userId, user.getId()))
-                .findFirst()
-                .orElseThrow(()-> {
-                    String errorMessage = String.format("Пользователь с id %d не найден.", userId);
-                    log.warn(errorMessage);
-                    return new NotFoundException(errorMessage);
-                });
+       validate.isExist(users.containsKey(userId), userId);
+       return users.get(userId);
     }
 }

@@ -1,52 +1,49 @@
 package ru.yandex.practicum.filmorate.storage.film;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.validate.FilmValidate;
 
-import java.time.LocalDate;
+
 import java.util.*;
 
 @Slf4j
 @Component
-public class InMemoryFilmStorage implements FilmStorage{
+@RequiredArgsConstructor
+public class InMemoryFilmStorage implements FilmStorage {
 
     // таблица для хранения фильмов
     private final Map<Long, Film> films = new HashMap<>();
+    private final FilmValidate validate;
 
     @Override
     public Film create(Film film) {
         log.info("Добавление фильма {}", film);
-        validRelease(film);
+        validate.validRelease(film);
         film.setId(getNextId());
         films.put(film.getId(), film);
         log.info("Фильм с id {} успешно добавлен.", film.getId());
         return film;
     }
 
-    /**
-     Метод для обновления, проверяем id, на null и в качестве ключа к таблице.
-     Получаем из таблицы фильм, меняем ему поля, если поля были указны в Json и прошли валидацию.
-     */
+
     @Override
     public Film update(Film newFilm) {
         log.info("Обновление данных фильма {} c id {}", newFilm, newFilm.getId());
         Long id = newFilm.getId();
-        if (Objects.isNull(id)) {
-            String message = "id должен быть указан.";
-            log.warn(message);
-            throw new ValidationException(message);
-        }
-        if (!films.containsKey(id)) {
-            String message = String.format("Фильм с id %d, не найден.", id);
-            log.warn(message);
-            throw new NotFoundException(message);
-        }
-        // Проверяем дату релиза, чтобы не раньше 1895-12-28 числа.
-        validRelease(newFilm);
 
+        log.debug("Валидация на Null c id {}", id);
+        validate.isNull(id);
+        log.debug("Проверка id {} на существование в таблице.", id);
+        validate.isExist(films.containsKey(id), id);
+        log.debug("Проверка фильма c датой {} на дату выхода {}", newFilm.getReleaseDate(), validate.getValidReleaseDate());
+        validate.validRelease(newFilm);
+
+        // Получаем из таблицы фильм, меняем ему поля, если поля были указны в Json и прошли валидацию.
         Film oldFilm = films.get(id);
 
         if (newFilm.getName() != null) {
@@ -74,29 +71,10 @@ public class InMemoryFilmStorage implements FilmStorage{
 
     @Override
     public Film getById(Long filmId) {
-       return films.values().stream()
-                .filter(film -> Objects.equals(filmId, film.getId()))
-                .findFirst()
-                .orElseThrow(()-> {
-                    String errorMessage = String.format("Фильм с id %d не найден.", filmId);
-                    log.warn(errorMessage);
-                    return new NotFoundException(errorMessage);
-                });
-    }
-
-
-    // Функциональность для метода валидации validRelease
-    private boolean isValidRelease(Film film) {
-        return Objects.isNull(film.getReleaseDate()) || film.getReleaseDate().isAfter(LocalDate.of(1895, 12, 28));
-    }
-
-    // Валидация даты релиза.
-    private void validRelease(Film film) {
-        if (!isValidRelease(film)) {
-            String message = "Дата выходы не может быть раньше 1895-12-28";
-            log.warn(message);
-            throw new ValidationException(message);
-        }
+        log.debug("Получение пользователя по id {}", filmId);
+        validate.isExist(films.containsKey(filmId), filmId);
+        log.info("Пользователь успешно получен.");
+        return films.get(filmId);
     }
 
     private Long getNextId() {
