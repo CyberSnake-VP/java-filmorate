@@ -1,5 +1,6 @@
-package ru.yandex.practicum.filmorate.storage;
+package ru.yandex.practicum.filmorate.storage.user;
 
+import io.micrometer.observation.annotation.Observed;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
@@ -80,5 +81,17 @@ public class InMemoryUserStorage implements UserStorage{
                 .max()
                 .orElse(0);
         return ++nextId;
+    }
+
+    @Override
+    public User getById(Long userId) {
+       return users.values().stream()
+                .filter(user -> Objects.equals(userId, user.getId()))
+                .findFirst()
+                .orElseThrow(()-> {
+                    String errorMessage = String.format("Пользователь с id %d не найден.", userId);
+                    log.warn(errorMessage);
+                    return new NotFoundException(errorMessage);
+                });
     }
 }
