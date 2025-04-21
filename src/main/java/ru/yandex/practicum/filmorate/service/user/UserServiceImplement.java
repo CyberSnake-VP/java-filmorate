@@ -50,8 +50,11 @@ public class UserServiceImplement implements UserService {
         log.debug("Получаем пользователей.");
         User user = userStorage.getById(userId);
         User userFriend = userStorage.getById(friendId);
-        log.debug("Проверяем существуют ли пользователи в списках друзей друг друга.");
-        validate.isRepeatFriend(user, friendId);
+
+        // Если у пользователя, нет данного друга, то просто возвращаем объект пользователя.
+        if (!user.getFriends().contains(userFriend.getId())) {
+            return user;
+        }
         log.debug("Удаление из списков друзей.");
         user.getFriends().remove(friendId);
         userFriend.getFriends().remove(userId);

@@ -9,7 +9,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.film.FilmService;
-import ru.yandex.practicum.filmorate.service.film.FilmServiceImplement;
 
 import java.util.Collection;
 
@@ -29,7 +28,7 @@ public class FilmController {
 
     @GetMapping("{filmId}")
     public Film getById(@PathVariable(value = "filmId", required = false) @Min(1) @Positive Long filmId) {
-      return filmService.getById(filmId);
+        return filmService.getById(filmId);
     }
 
     @GetMapping("/popular")
@@ -49,8 +48,8 @@ public class FilmController {
 
     @PutMapping("{id}/like/{userId}")
     public Film addLike(@PathVariable("id") @Min(1) @Positive Long id,
-                        @PathVariable("userId") @Min(1) @Positive Long userId){
-       return filmService.addLike(id, userId);
+                        @PathVariable("userId") @Min(1) @Positive Long userId) {
+        return filmService.addLike(id, userId);
     }
 
     @DeleteMapping("{id}/like/{userId}")

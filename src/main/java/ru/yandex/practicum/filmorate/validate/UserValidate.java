@@ -45,15 +45,4 @@ public class UserValidate implements Validate {
         }
     }
 
-    // Проверка пользователей на нахождение в списке друзей.
-    public void isRepeatFriend(User user, Long friendId) {
-        user.getFriends().stream()
-                .filter(id -> Objects.equals(id, friendId))
-                .findFirst().orElseThrow(() -> {
-                    String errorMessage = String.format(
-                            "Пользователь с id %d не находится в друзьях пользователя с id %d", user.getId(), friendId);
-                    return new ValidationException(errorMessage);
-                });
-
-    }
 }
