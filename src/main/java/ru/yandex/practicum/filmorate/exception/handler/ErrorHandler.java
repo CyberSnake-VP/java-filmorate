@@ -19,12 +19,12 @@ public class ErrorHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler
     public ErrorResponse handleValidate(final ValidationException e) {
-       return ErrorResponse.builder().error(e.getMessage()).build();
+        return ErrorResponse.builder().error(e.getMessage()).build();
     }
 
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler
-    public ErrorResponse handleError(final Throwable e) {
+    public ErrorResponse handleError(final RuntimeException e) {
         return ErrorResponse.builder().error("Неизвестная ошибка.").build();
     }
 }

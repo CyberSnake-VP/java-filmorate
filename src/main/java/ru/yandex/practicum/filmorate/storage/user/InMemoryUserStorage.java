@@ -6,12 +6,15 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.validate.UserValidate;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 @Component
 @Slf4j
 @RequiredArgsConstructor
-public class InMemoryUserStorage implements UserStorage{
+public class InMemoryUserStorage implements UserStorage {
     // Таблица для хранения наших пользователей по email
     private final Map<Long, User> users = new HashMap<>();
     private final UserValidate validate;
@@ -32,8 +35,8 @@ public class InMemoryUserStorage implements UserStorage{
     }
 
     /**
-     Метод для обновления, проверяем id, на null и в качестве ключа к таблице.
-     Получаем из таблицы пользователя, меняем ему поля, если поля были указны в Json и прошли валидацию.
+     * Метод для обновления, проверяем id, на null и в качестве ключа к таблице.
+     * Получаем из таблицы пользователя, меняем ему поля, если поля были указны в Json и прошли валидацию.
      */
     @Override
     public User update(User newUser) {
@@ -83,7 +86,7 @@ public class InMemoryUserStorage implements UserStorage{
 
     @Override
     public User getById(Long userId) {
-       validate.isExist(users.containsKey(userId), userId);
-       return users.get(userId);
+        validate.isExist(users.containsKey(userId), userId);
+        return users.get(userId);
     }
 }
