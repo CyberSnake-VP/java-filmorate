@@ -12,4 +12,6 @@ public interface UserService {
     Collection<User> getAll();
 
     User getById(Long userId);
+
+    User addFriend(Long userId, Long friendId);
 }

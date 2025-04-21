@@ -20,12 +20,13 @@ import java.util.Collection;
 @Validated
 
 public class UserController {
-private final UserService userService;
+    private final UserService userService;
 
     @GetMapping
     public Collection<User> getAll() {
-       return userService.getAll();
+        return userService.getAll();
     }
+
     @GetMapping("{userId}")
     public User getById(@PathVariable(value = "userId", required = false) @Min(1) @Positive Long userId) {
         return userService.getById(userId);
@@ -38,6 +39,12 @@ private final UserService userService;
 
     @PutMapping
     public User update(@Valid @RequestBody User newUser) {
-       return userService.update(newUser);
+        return userService.update(newUser);
+    }
+
+    @PutMapping("{userId}/friends/{friendId}")
+    public User addFriend(@PathVariable("userId") @Min(1) @Positive Long userId,
+                          @PathVariable("friendId") @Min(1) @Positive Long friendId) {
+        return userService.addFriend(userId, friendId);
     }
 }
