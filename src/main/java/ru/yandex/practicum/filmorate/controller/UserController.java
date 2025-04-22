@@ -27,18 +27,18 @@ public class UserController {
     }
 
     @GetMapping("{id}")
-    public User getById(@PathVariable(value = "id", required = false) @Min(1) @Positive Long id) {
+    public User getById(@PathVariable(value = "id", required = false) @Min(1) Long id) {
         return userService.getById(id);
     }
 
     @GetMapping("{id}/friends")
-    public Collection<User> getAllFriends(@PathVariable("id") @Min(1) @Positive Long id) {
+    public Collection<User> getAllFriends(@PathVariable("id") @Min(1) Long id) {
         return userService.getAllFriends(id);
     }
 
     @GetMapping("{id}/friends/common/{otherId}")
-    public Collection<User> getCommonFriends(@PathVariable("id") @Min(1) @Positive Long id,
-                                             @PathVariable("otherId") @Min(1) @Positive Long otherId) {
+    public Collection<User> getCommonFriends(@PathVariable("id") @Min(1) Long id,
+                                             @PathVariable("otherId") @Min(1) Long otherId) {
         return userService.getCommonFriends(id, otherId);
     }
 
@@ -53,14 +53,14 @@ public class UserController {
     }
 
     @PutMapping("{id}/friends/{friendId}")
-    public User addFriend(@PathVariable("id") @Min(1) @Positive Long userId,
-                          @PathVariable("friendId") @Min(1) @Positive Long friendId) {
+    public User addFriend(@PathVariable("id") @Min(1) Long userId,
+                          @PathVariable("friendId") @Min(1) Long friendId) {
         return userService.addFriend(userId, friendId);
     }
 
     @DeleteMapping("{userId}/friends/{friendId}")
-    public User deleteFriend(@PathVariable("userId") @Min(1) @Positive Long userId,
-                             @PathVariable("friendId") @Min(1) @Positive Long friendId) {
+    public User deleteFriend(@PathVariable("userId") @Min(1) Long userId,
+                             @PathVariable("friendId") @Min(1) Long friendId) {
         return userService.deleteFriend(userId, friendId);
     }
 
