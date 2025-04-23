@@ -2,7 +2,7 @@ package ru.yandex.practicum.filmorate.storage.user;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.validate.UserValidate;
 
@@ -11,8 +11,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-@Component
 @Slf4j
+@Repository
 @RequiredArgsConstructor
 public class InMemoryUserStorage implements UserStorage {
     // Таблица для хранения наших пользователей по email
@@ -86,6 +86,7 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public User getById(Long userId) {
+        log.info("Получение пользователя по id {}", userId);
         validate.isExist(users.containsKey(userId), userId);
         return users.get(userId);
     }
