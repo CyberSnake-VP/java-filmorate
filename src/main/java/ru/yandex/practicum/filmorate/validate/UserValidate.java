@@ -1,9 +1,9 @@
 package ru.yandex.practicum.filmorate.validate;
 
+import jakarta.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.Map;
@@ -17,7 +17,6 @@ public class UserValidate implements Validate {
     public void isExist(boolean existing, Long id) {
         if (!existing) {
             String message = String.format("Пользователь с id %d, не найден.", id);
-            log.warn(message);
             throw new NotFoundException(message);
         }
     }
@@ -26,7 +25,6 @@ public class UserValidate implements Validate {
     public void isNull(Long id) {
         if (Objects.isNull(id)) {
             String message = "id должен быть указан.";
-            log.warn(message);
             throw new ValidationException(message);
         }
     }
@@ -40,7 +38,6 @@ public class UserValidate implements Validate {
 
         if (isExist) {
             String errorMessage = String.format("Пользователь с email %s адресом уже существует.", email);
-            log.warn(errorMessage);
             throw new ValidationException(errorMessage);
         }
     }
