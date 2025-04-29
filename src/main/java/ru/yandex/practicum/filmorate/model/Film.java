@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
+import ru.yandex.practicum.filmorate.model.enumerations.Genre;
 
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -30,5 +31,8 @@ public class Film {
 
     // список лайков.
     private final Set<Long> likes = new HashSet<>();
+
+    // жанр фильма
+    private Genre genre;
 }
 
