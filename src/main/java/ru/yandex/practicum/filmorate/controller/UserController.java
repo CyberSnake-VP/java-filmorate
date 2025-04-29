@@ -1,101 +1,66 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Min;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.user.UserService;
 
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
 
 @RestController
 @RequestMapping("/users")
 @Slf4j
-public class UserController {
+@RequiredArgsConstructor
+@Validated
 
-    // Таблица для хранения наших пользователей по email
-    private final Map<Long, User> users = new HashMap<>();
+public class UserController {
+    private final UserService userService;
 
     @GetMapping
     public Collection<User> getAll() {
-        log.info("Список пользователей успешно отправлен");
-        return users.values();
+        return userService.getAll();
+    }
+
+    @GetMapping("{id}")
+    public User getById(@PathVariable(value = "id", required = false) @Min(1) Long id) {
+        return userService.getById(id);
+    }
+
+    @GetMapping("{id}/friends")
+    public Collection<User> getAllFriends(@PathVariable("id") @Min(1) Long id) {
+        return userService.getAllFriends(id);
+    }
+
+    @GetMapping("{id}/friends/common/{otherId}")
+    public Collection<User> getCommonFriends(@PathVariable("id") @Min(1) Long id,
+                                             @PathVariable("otherId") @Min(1) Long otherId) {
+        return userService.getCommonFriends(id, otherId);
     }
 
     @PostMapping
     public User create(@Valid @RequestBody User user) {
-        processCreate(user);
-        log.info("Пользователь успешно добавлен в список");
-        return user;
+        return userService.create(user);
     }
 
     @PutMapping
     public User update(@Valid @RequestBody User newUser) {
-        log.info("Обновление данных пользователя {} c id {}", newUser, newUser.getId());
-        User oldUser = processUpdate(newUser);
-        log.info("Данные пользователя с id {} успешно обновлены.", newUser.getId());
-        return oldUser;
+        return userService.update(newUser);
     }
 
-    // Метод для получения id, получаем максимальный ключ-id нашей таблицы пользователей, увеличиваем его на 1
-    // если это первый ключ, то записываем значение 1
-    private Long getNextId() {
-        long nextId = users.keySet().stream()
-                .mapToLong(id -> id)
-                .max()
-                .orElse(0);
-        return ++nextId;
+    @PutMapping("{id}/friends/{friendId}")
+    public User addFriend(@PathVariable("id") @Min(1) Long userId,
+                          @PathVariable("friendId") @Min(1) Long friendId) {
+        return userService.addFriend(userId, friendId);
     }
 
-    // Создание и добавление пользователя в таблицу, при прохождении валидации. Если имя не указано, будет записан логин.
-    private void processCreate(User user) {
-        log.info("Добавление пользователя {}.", user);
-        user.setId(getNextId());
-        if (Objects.isNull(user.getName()) || user.getName().isBlank()) {
-            user.setName(user.getLogin());
-        }
-        users.put(user.getId(), user);
-    }
-
-    /**
-       Метод для обновления, проверяем id, на null и в качестве ключа к таблице.
-       Получаем из таблицы пользователя, меняем ему поля, если поля были указны в Json и прошли валидацию.
-     */
-    private User processUpdate(User newUser) {
-        Long id = newUser.getId();
-        if (Objects.isNull(id)) {
-            String message = "id должен быть указан.";
-            log.warn(message);
-            throw new ValidationException(message);
-        }
-        if (!users.containsKey(id)) {
-            String message = String.format("Пользователь с id %d, не найден.", id);
-            log.warn(message);
-            throw new NotFoundException(message);
-        }
-
-        User oldUser = users.get(id);
-
-        if (newUser.getEmail() != null) {
-            oldUser.setEmail(newUser.getEmail());
-        }
-        if (newUser.getLogin() != null) {
-            oldUser.setLogin(newUser.getLogin());
-        }
-        if (newUser.getName() != null) {
-            oldUser.setName(newUser.getName());
-        }
-        if (newUser.getBirthday() != null) {
-            oldUser.setBirthday(newUser.getBirthday());
-        }
-
-        users.put(id, oldUser);
-        return oldUser;
+    @DeleteMapping("{userId}/friends/{friendId}")
+    public User deleteFriend(@PathVariable("userId") @Min(1) Long userId,
+                             @PathVariable("friendId") @Min(1) Long friendId) {
+        return userService.deleteFriend(userId, friendId);
     }
 
 }
