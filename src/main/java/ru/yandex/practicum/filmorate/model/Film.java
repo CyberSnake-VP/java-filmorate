@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
 import ru.yandex.practicum.filmorate.model.enumerations.Genre;
+import ru.yandex.practicum.filmorate.model.enumerations.MpaRating;
 
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -34,5 +35,8 @@ public class Film {
 
     // жанр фильма
     private Genre genre;
+
+    // рейтинг фильма
+    private MpaRating rating;
 }
 
