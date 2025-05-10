@@ -34,7 +34,7 @@ public class Film {
     private final Set<Long> likes = new HashSet<>();
 
     // жанр фильма
-    private Genre genre;
+    private Set<Genre> genre;
 
     // рейтинг фильма
     private MpaRating rating;
