@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.model.enumerations;
 
+
 public enum MpaRating {
     /**
      G — у фильма нет возрастных ограничений,
@@ -12,5 +13,8 @@ public enum MpaRating {
     PG,
     PG_13,
     R,
-    NC_17
+    NC_17;
 }
+
+
+
