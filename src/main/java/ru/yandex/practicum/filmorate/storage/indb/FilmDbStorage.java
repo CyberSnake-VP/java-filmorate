@@ -7,18 +7,29 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.InternalServerException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.storage.FilmGenres;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.validate.FilmValidate;
 
 import java.util.Collection;
-import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Objects;
 
 
 @Repository
 @Qualifier("FilmDbStorage")
-public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage, FilmGenres {
+public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
+
+    private final GenreDbStorage genreDbStorage;
+    private final FilmValidate filmValidate;
+
+    public FilmDbStorage(JdbcTemplate jdbc, RowMapper<Film> mapper, GenreDbStorage genreDbStorage) {
+        super(jdbc, mapper);
+        this.genreDbStorage = genreDbStorage;
+        this.filmValidate = new FilmValidate();
+    }
+
     private final String GET_ALL_QUERY = "SELECT * FROM films";
+
 
     private final String INSERT_QUERY =
             "INSERT INTO films(name, description, release_date, duration, mpa_rating_id)" +
@@ -26,9 +37,10 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage, F
 
     private final String UPDATE_QUERY =
             "UPDATE films SET " +
-                    "name = ?," +
+                    "name = ?, " +
                     "description = ?, " +
                     "release_date = ?, " +
+                    "duration = ?, " +
                     "mpa_rating_id = ? " +
                     "WHERE film_id = ?";
 
@@ -42,22 +54,20 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage, F
 
     private final String GET_POPULAR_FILM =
             "SELECT f.film_id, " +
-                "f.name, " +
-                "f.description, " +
-                "f.release_date, " +
-                "f.duration, " +
-                "f.mpa_rating_id," +
-                "count(l.user_id) as l_count " +
-            "from FILMS f " +
-            "join MPA_RATING m ON f.MPA_RATING_ID = m.MPA_RATING_ID " +
-            "left outer join LIKES l On f.FILM_ID = l.FILM_ID " +
-            "GROUP BY f.film_id " +
-            "ORDER BY l_count desc " +
-            "LIMIT ?";
+                    "f.name, " +
+                    "f.description, " +
+                    "f.release_date, " +
+                    "f.duration, " +
+                    "f.mpa_rating_id," +
+                    "count(l.user_id) as l_count " +
+                    "from FILMS f " +
+                    "join MPA_RATING m ON f.MPA_RATING_ID = m.MPA_RATING_ID " +
+                    "left outer join LIKES l On f.FILM_ID = l.FILM_ID " +
+                    "GROUP BY f.film_id " +
+                    "ORDER BY l_count desc " +
+                    "LIMIT ?";
 
-    public FilmDbStorage(JdbcTemplate jdbc, RowMapper<Film> mapper) {
-        super(jdbc, mapper);
-    }
+    private final String SET_GENRE_QUERY = "INSERT INTO films_genres (genre_id, film_id) VALUES(?, ?)";
 
     @Override
     public Film create(Film film) {
@@ -67,9 +77,21 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage, F
                 film.getDescription(),
                 film.getReleaseDate(),
                 film.getDuration(),
-                film.getMpaRating().getId()
+                film.getMpa().getId()
         );
         film.setId(id);
+        filmValidate.validRelease(film);
+        if (Objects.nonNull(film.getGenres())) {
+            List<Genre> genres = film.getGenres();
+            List<Genre> list = genres.stream()
+                    .map(genre -> genreDbStorage.getGenreById(genre.getId()))
+                    .toList();
+            list.stream().map(Genre::getId).forEach(genreId -> update(SET_GENRE_QUERY, genreId, film.getId()));
+
+            genres.clear();
+            genres.addAll(list);
+            System.out.println();
+        }
         return film;
     }
 
@@ -81,7 +103,8 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage, F
                 newFilm.getDescription(),
                 newFilm.getReleaseDate(),
                 newFilm.getDuration(),
-                newFilm.getMpaRating().getId()
+                newFilm.getMpa().getId(),
+                newFilm.getId()
         );
         return newFilm;
     }
@@ -125,19 +148,5 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage, F
         return findMany(GET_POPULAR_FILM, count);
     }
 
-    @Override
-    public void setFilmGenres(Film film) {
-
-    }
-
-    @Override
-    public LinkedHashSet<Genre> getFilmGenres(Film film) {
-        return null;
-    }
-
-    @Override
-    public List<Film> getPopularFilms(int count) {
-        return List.of();
-    }
 }
 

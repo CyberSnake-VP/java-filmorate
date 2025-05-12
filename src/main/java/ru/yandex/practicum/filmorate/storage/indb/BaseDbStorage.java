@@ -58,7 +58,7 @@ public class BaseDbStorage<T> {
                 return ps;
             }, keyHolder);
         } catch (DataAccessException e) {
-            throw new InternalServerException("Некорректное заполнение полей.");
+            throw new NotFoundException("Некорректное заполнение полей.");
         }
 
         Long id = keyHolder.getKeyAs(Long.class);

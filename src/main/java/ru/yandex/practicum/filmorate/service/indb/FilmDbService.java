@@ -3,14 +3,17 @@ package ru.yandex.practicum.filmorate.service.indb;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.service.FilmGenresService;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.util.Collection;
+import java.util.Set;
 
 @Service
 @Qualifier("FilmDbService")
-public class FilmDbService implements FilmService {
+public class FilmDbService implements FilmService, FilmGenresService {
     private final FilmStorage filmStorage;
 
     public FilmDbService(@Qualifier("FilmDbStorage") FilmStorage filmStorage) {
@@ -26,7 +29,6 @@ public class FilmDbService implements FilmService {
     public Film update(Film newFilm) {
         return filmStorage.update(newFilm);
     }
-
     @Override
     public Collection<Film> getAll() {
         return filmStorage.getAll();
@@ -51,4 +53,10 @@ public class FilmDbService implements FilmService {
     public Collection<Film> getPopular(Long count) {
         return filmStorage.getPopular(count);
     }
+
+    @Override
+    public Set<Genre> getFilmGenres(Film film) {
+        return Set.of();
+    }
+
 }
