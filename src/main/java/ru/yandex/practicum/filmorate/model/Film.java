@@ -34,10 +34,10 @@ public class Film {
     private List<Long> likes;
 
     // жанр фильма
-    private Set<Genre> genres;
+    private List<Genre> genres;
 
     // рейтинг фильма
     @NotNull
-    private MpaRating mpaRating;
+    private MpaRating mpa;
 }
 
