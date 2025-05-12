@@ -2,14 +2,14 @@ package ru.yandex.practicum.filmorate.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
-import ru.yandex.practicum.filmorate.model.enumerations.Genre;
-import ru.yandex.practicum.filmorate.model.enumerations.MpaRating;
 
 import java.time.LocalDate;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 
@@ -30,13 +30,14 @@ public class Film {
     @Positive(message = "Продолжительность фильма должна быть положительным числом.")
     private Integer duration;
 
-    // список лайков.
-    private final Set<Long> likes = new HashSet<>();
+    // количество лайков
+    private List<Long> likes;
 
     // жанр фильма
-    private Set<Genre> genre;
+    private Set<Genre> genres;
 
     // рейтинг фильма
-    private MpaRating rating;
+    @NotNull
+    private MpaRating mpaRating;
 }
 

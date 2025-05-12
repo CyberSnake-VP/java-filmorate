@@ -2,23 +2,28 @@ package ru.yandex.practicum.filmorate.controller;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.service.user.UserService;
+import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.util.Collection;
 
 @RestController
 @RequestMapping("/users")
 @Slf4j
-@RequiredArgsConstructor
 @Validated
 
 public class UserController {
     private final UserService userService;
+
+    @Autowired
+    public UserController(@Qualifier("UserDbService") UserService userService) {
+        this.userService = userService;
+    }
 
     @GetMapping
     public Collection<User> getAll() {
