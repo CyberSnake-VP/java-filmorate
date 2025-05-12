@@ -2,11 +2,11 @@ package ru.yandex.practicum.filmorate.storage.indb;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataAccessException;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import ru.yandex.practicum.filmorate.exception.InternalServerException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 
 import java.sql.PreparedStatement;
 import java.sql.Statement;
@@ -21,8 +21,8 @@ public class BaseDbStorage<T> {
     protected T findOne(String query, Object... params) {
         try {
             return jdbc.queryForObject(query, mapper, params);
-        } catch (EmptyResultDataAccessException e) {
-            return null;
+        } catch (DataAccessException e) {
+            throw new NotFoundException("Не удалось получить данные.");
         }
     }
 
@@ -35,7 +35,7 @@ public class BaseDbStorage<T> {
     protected void update(String query, Object... params) {
         int rowsUpdated = jdbc.update(query, params);
         if (rowsUpdated == 0) {
-            throw new InternalServerException("Не удалось обновить данные");
+            throw new NotFoundException("Не удалось обновить данные");
         }
     }
 

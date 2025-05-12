@@ -16,7 +16,6 @@ import java.util.Collection;
 @RequestMapping("/users")
 @Slf4j
 @Validated
-
 public class UserController {
     private final UserService userService;
 
