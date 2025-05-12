@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.service.inmemory;
 
-import jakarta.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -11,8 +10,6 @@ import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
 
 @Service
 @Slf4j
@@ -47,7 +44,7 @@ public class FilmServiceImplement implements FilmService {
 
     @Override
     public Film addLike(Long id, Long userId) {
-       return filmStorage.addLike(id, userId);
+        return filmStorage.addLike(id, userId);
     }
 
     @Override
@@ -57,6 +54,6 @@ public class FilmServiceImplement implements FilmService {
 
     @Override
     public Collection<Film> getPopular(Long count) {
-       return filmStorage.getPopular(count);
+        return filmStorage.getPopular(count);
     }
 }

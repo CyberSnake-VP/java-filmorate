@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.service.inmemory;
 
-import jakarta.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -9,8 +8,7 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Collection;
 
 @Slf4j
 @Service
@@ -37,7 +35,7 @@ public class UserServiceImplement implements UserService {
 
     @Override
     public User addFriend(Long userId, Long friendId) {
-      return userStorage.addFriend(userId, friendId);
+        return userStorage.addFriend(userId, friendId);
     }
 
     @Override
@@ -47,7 +45,7 @@ public class UserServiceImplement implements UserService {
 
     @Override
     public Collection<User> getAllFriends(Long userId) {
-      return userStorage.getAllFriends(userId);
+        return userStorage.getAllFriends(userId);
     }
 
     @Override

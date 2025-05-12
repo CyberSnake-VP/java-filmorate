@@ -6,5 +6,6 @@ import java.util.List;
 
 public interface MpaRatingService {
     MpaRating getMpaRating(int id);
+
     List<MpaRating> getAllMpaRatings();
 }
