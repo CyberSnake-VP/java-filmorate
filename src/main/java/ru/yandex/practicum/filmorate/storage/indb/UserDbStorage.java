@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.exception.InternalServerException;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -22,10 +22,11 @@ public class UserDbStorage extends BaseDbStorage<User> implements UserStorage {
 
     private final String UPDATE_QUERY =
             "UPDATE users SET " +
-                    "login = ?," +
-                    " name = ?, " +
+                    "login = ?, " +
+                    "name = ?, " +
+                    "email = ?, " +
                     "birthday = ? " +
-                    "WHERE id = ?";
+                    "WHERE user_id = ?";
 
     private final String GET_BY_ID_QUERY = "SELECT * FROM users WHERE user_id = ?";
 
@@ -44,11 +45,11 @@ public class UserDbStorage extends BaseDbStorage<User> implements UserStorage {
     private final String GET_COMMON_FRIENDS_QUERY =
             " SELECT * FROM USERS " +
                     "WHERE user_id IN ( " +
-                        "SELECT f.friend_id " +
-                        "FROM friends AS f " +
-                        "WHERE f.user_id IN (?, ?) " +
-                        "GROUP BY f.friend_id " +
-                        "HAVING COUNT(*) > 1 " +
+                    "SELECT f.friend_id " +
+                    "FROM friends AS f " +
+                    "WHERE f.user_id IN (?, ?) " +
+                    "GROUP BY f.friend_id " +
+                    "HAVING COUNT(*) > 1 " +
                     ")";
 
     //Инициализация базового репозитория
@@ -73,10 +74,11 @@ public class UserDbStorage extends BaseDbStorage<User> implements UserStorage {
     public User update(User user) {
         update(
                 UPDATE_QUERY,
-                user.getEmail(),
                 user.getLogin(),
                 user.getName(),
-                user.getBirthday()
+                user.getEmail(),
+                user.getBirthday(),
+                user.getId()
         );
         return user;
     }
@@ -100,32 +102,30 @@ public class UserDbStorage extends BaseDbStorage<User> implements UserStorage {
         if (!Objects.equals(user.getId(), friend.getId())) {
             update(
                     INSERT_FRIENDS_QUERY,
-                    userId,
-                    friendId
+                    friendId,
+                    userId
             );
             return findOne(GET_BY_ID_QUERY, friendId);
         } else {
-            throw new InternalServerException("Попытка добавить в друзья самого себя.");
+            throw new NotFoundException("Попытка добавить в друзья самого себя.");
         }
     }
 
     @Override
     public User deleteFriend(Long userId, Long friendId) {
+        findOne(GET_BY_ID_QUERY, userId);
         User friend = findOne(GET_BY_ID_QUERY, friendId);
-        boolean success = delete(
+        delete(
                 DELETE_FRIENDS_QUERY,
-                userId,
-                friendId
+                friendId,
+                userId
         );
-        if (success) {
-            return friend;
-        } else {
-            throw new InternalServerException("Удаление не удалось.");
-        }
+        return friend;
     }
 
     @Override
     public Collection<User> getAllFriends(Long userId) {
+        findOne(GET_BY_ID_QUERY, userId);
         return findMany(GET_ALL_FRIENDS_QUERY, userId);
     }
 

@@ -7,12 +7,11 @@ import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.util.Collection;
-import java.util.List;
 
 @Service
 @Qualifier("FilmDbService")
 public class FilmDbService implements FilmService {
-    private FilmStorage filmStorage;
+    private final FilmStorage filmStorage;
 
     public FilmDbService(@Qualifier("FilmDbStorage") FilmStorage filmStorage) {
         this.filmStorage = filmStorage;
@@ -25,7 +24,7 @@ public class FilmDbService implements FilmService {
 
     @Override
     public Film update(Film newFilm) {
-        return null;
+        return filmStorage.update(newFilm);
     }
 
     @Override
@@ -35,21 +34,21 @@ public class FilmDbService implements FilmService {
 
     @Override
     public Film getById(Long filmId) {
-        return null;
+        return filmStorage.getById(filmId);
     }
 
     @Override
-    public Film addLike(Long id, Long userId) {
-        return null;
+    public Film addLike(Long film_id, Long userId) {
+        return filmStorage.addLike(film_id, userId);
     }
 
     @Override
-    public Film deleteLike(Long id, Long userId) {
-        return null;
+    public Film deleteLike(Long film_id, Long userId) {
+        return filmStorage.deleteLike(film_id, userId);
     }
 
     @Override
     public Collection<Film> getPopular(Long count) {
-        return List.of();
+        return filmStorage.getPopular(count);
     }
 }
