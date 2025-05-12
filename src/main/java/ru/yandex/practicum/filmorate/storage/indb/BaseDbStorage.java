@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.indb;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -12,6 +13,7 @@ import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.util.List;
 
+@Slf4j
 @RequiredArgsConstructor
 public class BaseDbStorage<T> {
     protected final JdbcTemplate jdbc;
@@ -35,6 +37,7 @@ public class BaseDbStorage<T> {
     protected void update(String query, Object... params) {
         int rowsUpdated = jdbc.update(query, params);
         if (rowsUpdated == 0) {
+            log.error("Ошибка при обновлении объекта");
             throw new NotFoundException("Не удалось обновить данные");
         }
     }
@@ -58,6 +61,7 @@ public class BaseDbStorage<T> {
                 return ps;
             }, keyHolder);
         } catch (DataAccessException e) {
+            log.error("Ошибка при записи объекта");
             throw new NotFoundException("Некорректное заполнение полей.");
         }
 
@@ -67,6 +71,7 @@ public class BaseDbStorage<T> {
         if (id != null) {
             return id;
         } else {
+            log.error("Ошибка при генерации id объекта при создании.");
             throw new InternalServerException("Не удалось сохранить данные");
         }
     }

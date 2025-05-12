@@ -8,8 +8,6 @@ import ru.yandex.practicum.filmorate.model.MpaRating;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
 
 @Component
 public class FilmRowMapper implements RowMapper<Film> {
@@ -22,7 +20,7 @@ public class FilmRowMapper implements RowMapper<Film> {
         film.setDescription(resultSet.getString("description"));
         film.setReleaseDate(resultSet.getDate("release_date").toLocalDate());
         film.setDuration(resultSet.getInt("duration"));
-        film.setMpa(new MpaRating(resultSet.getInt("mpa_rating_id"), resultSet.getString("name")));
+        film.setMpa(new MpaRating(resultSet.getInt("mpa_rating_id"), resultSet.getString("mpa_name")));
         film.setGenres(new ArrayList<>());
         film.setLikes(new ArrayList<>());
         return film;

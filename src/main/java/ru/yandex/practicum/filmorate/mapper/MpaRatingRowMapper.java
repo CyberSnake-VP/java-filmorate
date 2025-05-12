@@ -14,7 +14,8 @@ public class MpaRatingRowMapper implements RowMapper<MpaRating> {
     public MpaRating mapRow(ResultSet resultSet, int rowNum) throws SQLException {
         return new MpaRating(
                 resultSet.getInt("mpa_rating_id"),
-                resultSet.getString("name")
+                resultSet.getString("mpa_name")
         );
+
     }
 }

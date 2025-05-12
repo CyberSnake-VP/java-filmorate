@@ -21,7 +21,7 @@ public class MpaRatingController {
     @GetMapping("{id}")
     @ResponseStatus(HttpStatus.OK)
     public MpaRating findById(@PathVariable("id") int id) {
-      return mpaRatingService.getMpaRating(id);
+        return mpaRatingService.getMpaRating(id);
     }
 
     @GetMapping
