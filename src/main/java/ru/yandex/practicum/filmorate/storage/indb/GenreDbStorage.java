@@ -11,9 +11,9 @@ import java.util.List;
 @Repository
 public class GenreDbStorage extends BaseDbStorage<Genre> implements GenreStorage {
 
-    private final String GET_BY_ID_QUERY = "SELECT * FROM genres WHERE genre_id = ?";
-    private final String GET_ALL_QUERY = "SELECT * FROM genres ORDER BY genre_id ";
-    private final String GET_GENRE_FILM =
+    private final String getByIdQuery = "SELECT * FROM genres WHERE genre_id = ?";
+    private final String getAllQuery = "SELECT * FROM genres ORDER BY genre_id ";
+    private final String getGenreFilm =
             "SELECT g.genre_id, g.genre_name " +
                     "FROM films AS f " +
                     "JOIN films_genres AS fg ON (fg.film_id = f.FILM_ID) " +
@@ -26,16 +26,16 @@ public class GenreDbStorage extends BaseDbStorage<Genre> implements GenreStorage
 
     @Override
     public Genre getGenreById(int id) {
-        return findOne(GET_BY_ID_QUERY, id);
+        return findOne(getByIdQuery, id);
     }
 
     @Override
     public List<Genre> getAllGenres() {
-        return findMany(GET_ALL_QUERY);
+        return findMany(getAllQuery);
     }
 
     @Override
     public List<Genre> getGenresFilmById(Long id) {
-        return findMany(GET_GENRE_FILM, id);
+        return findMany(getGenreFilm, id);
     }
 }

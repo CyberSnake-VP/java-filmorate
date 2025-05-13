@@ -16,13 +16,13 @@ import java.util.Objects;
 @Qualifier("UserDbStorage")
 @Slf4j
 public class UserDbStorage extends BaseDbStorage<User> implements UserStorage {
-    private final String GET_ALL_QUERY = "SELECT * FROM users";
+    private final String getAllQuery = "SELECT * FROM users";
 
-    private final String INSERT_QUERY =
+    private final String insertQuery =
             "INSERT INTO users(email, login, name, birthday)" +
                     "VALUES(?, ?, ?, ?)";
 
-    private final String UPDATE_QUERY =
+    private final String updateQuery =
             "UPDATE users SET " +
                     "login = ?, " +
                     "name = ?, " +
@@ -30,21 +30,21 @@ public class UserDbStorage extends BaseDbStorage<User> implements UserStorage {
                     "birthday = ? " +
                     "WHERE user_id = ?";
 
-    private final String GET_BY_ID_QUERY = "SELECT * FROM users WHERE user_id = ?";
+    private final String getByIdQuery = "SELECT * FROM users WHERE user_id = ?";
 
-    private final String INSERT_FRIENDS_QUERY =
+    private final String insertFriendsQuery =
             "INSERT INTO friends (friend_id, user_id)" +
                     "VALUES (?, ?)";
 
-    private final String DELETE_FRIENDS_QUERY =
+    private final String deleteFriendsQuery =
             "DELETE FROM friends WHERE " +
                     "(friend_id = ? AND user_id = ?)";
 
-    private final String GET_ALL_FRIENDS_QUERY =
+    private final String getAllFriendsQuery =
             "SELECT * FROM users " +
                     "WHERE user_id IN (SELECT friend_id FROM friends WHERE user_id = ?)";
 
-    private final String GET_COMMON_FRIENDS_QUERY =
+    private final String getCommonFriendsQuery =
             " SELECT * FROM USERS " +
                     "WHERE user_id IN ( " +
                     "SELECT f.friend_id " +
@@ -63,7 +63,7 @@ public class UserDbStorage extends BaseDbStorage<User> implements UserStorage {
     public User create(User user) {
         log.info("Создание нового пользователя с id: {}", user.getId());
         long id = insert(
-                INSERT_QUERY,
+                insertQuery,
                 user.getEmail(),
                 user.getLogin(),
                 user.getName(),
@@ -78,7 +78,7 @@ public class UserDbStorage extends BaseDbStorage<User> implements UserStorage {
     public User update(User user) {
         log.info("Обновление данных пользователя с id {}", user.getId());
         update(
-                UPDATE_QUERY,
+                updateQuery,
                 user.getLogin(),
                 user.getName(),
                 user.getEmail(),
@@ -92,30 +92,30 @@ public class UserDbStorage extends BaseDbStorage<User> implements UserStorage {
     @Override
     public Collection<User> getAll() {
         log.info("Получение списка пользователей.");
-        return findMany(GET_ALL_QUERY);
+        return findMany(getAllQuery);
     }
 
     @Override
     public User getById(Long userId) {
         log.info("Получение пользователя с id {}", userId);
-        return findOne(GET_BY_ID_QUERY, userId);
+        return findOne(getByIdQuery, userId);
     }
 
     @Override
     public User addFriend(Long userId, Long friendId) {
         log.info("Добавление в друзья к пользователя с id {}, пользователя с id {}", userId, friendId);
-        User user = findOne(GET_BY_ID_QUERY, userId);
-        User friend = findOne(GET_BY_ID_QUERY, friendId);
+        User user = findOne(getByIdQuery, userId);
+        User friend = findOne(getByIdQuery, friendId);
 
         // пользователь не должен добавить самого себя в друзья
         if (!Objects.equals(user.getId(), friend.getId())) {
             update(
-                    INSERT_FRIENDS_QUERY,
+                    insertFriendsQuery,
                     friendId,
                     userId
             );
             log.info("Добавление в друзья прошло успешно, у пользователя с id {}.", userId);
-            return findOne(GET_BY_ID_QUERY, friendId);
+            return findOne(getByIdQuery, friendId);
         } else {
             log.warn("Ошибка при добавлении в друзья у пользователя с  id {}.", userId);
             throw new NotFoundException("Попытка добавить в друзья самого себя.");
@@ -125,10 +125,10 @@ public class UserDbStorage extends BaseDbStorage<User> implements UserStorage {
     @Override
     public User deleteFriend(Long userId, Long friendId) {
         log.info("Удаление  друга с id {} у пользователя c id {}.", friendId, userId);
-        findOne(GET_BY_ID_QUERY, userId);
-        User friend = findOne(GET_BY_ID_QUERY, friendId);
+        findOne(getByIdQuery, userId);
+        User friend = findOne(getByIdQuery, friendId);
         delete(
-                DELETE_FRIENDS_QUERY,
+                deleteFriendsQuery,
                 friendId,
                 userId
         );
@@ -139,13 +139,13 @@ public class UserDbStorage extends BaseDbStorage<User> implements UserStorage {
     @Override
     public Collection<User> getAllFriends(Long userId) {
         log.info("Получение списка друзей у пользователя с id {}", userId);
-        findOne(GET_BY_ID_QUERY, userId);
-        return findMany(GET_ALL_FRIENDS_QUERY, userId);
+        findOne(getByIdQuery, userId);
+        return findMany(getAllFriendsQuery, userId);
     }
 
     @Override
     public Collection<User> getCommonFriends(Long userId, Long friendId) {
         log.info("Получение списка общих друзей у пользователя с id {} и его друга c id {}", userId, friendId);
-        return findMany(GET_COMMON_FRIENDS_QUERY, userId, friendId);
+        return findMany(getCommonFriendsQuery, userId, friendId);
     }
 }
