@@ -7,8 +7,10 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import ru.yandex.practicum.filmorate.exception.InternalServerException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 
+import java.sql.SQLException;
 import java.util.Objects;
 
 @RestControllerAdvice
@@ -21,6 +23,21 @@ public class ErrorHandler {
         log.warn(e.getMessage());
         return ErrorResponse.builder().error(e.getMessage()).build();
     }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler
+    public ErrorResponse handleInternalServerError(final InternalServerException e) {
+        log.warn(e.getMessage());
+        return ErrorResponse.builder().error(e.getMessage()).build();
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler
+    public ErrorResponse handleJdbcException(final SQLException e) {
+        log.warn(e.getMessage());
+        return ErrorResponse.builder().error(e.getMessage()).build();
+    }
+
 
     // ValidateException является супер классом ConstraintViolationException, будут обрабатываться ошибки валидации
     // переменных пути запроса, а так же общая валидация в основной логике приложения.
