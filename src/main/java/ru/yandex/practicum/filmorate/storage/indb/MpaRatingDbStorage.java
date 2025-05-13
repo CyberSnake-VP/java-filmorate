@@ -9,12 +9,12 @@ import ru.yandex.practicum.filmorate.storage.MpaRatingStorage;
 import java.util.List;
 
 @Repository
-public class MapRatingDbService extends BaseDbStorage<MpaRating> implements MpaRatingStorage {
+public class MpaRatingDbStorage extends BaseDbStorage<MpaRating> implements MpaRatingStorage {
 
     private final String getByIdQuery = "SELECT * FROM mpa_rating WHERE mpa_rating_id = ?";
     private final String getAllQuery = "SELECT * FROM mpa_rating ORDER BY mpa_rating_id";
 
-    public MapRatingDbService(JdbcTemplate jdbc, RowMapper<MpaRating> mapper) {
+    public MpaRatingDbStorage(JdbcTemplate jdbc, RowMapper<MpaRating> mapper) {
         super(jdbc, mapper);
     }
 

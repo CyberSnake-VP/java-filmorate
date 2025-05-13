@@ -1,25 +1,64 @@
 package ru.yandex.practicum.filmorate.service.indb;
 
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.MpaRating;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.indb.GenreDbStorage;
+import ru.yandex.practicum.filmorate.storage.indb.MpaRatingDbStorage;
+import ru.yandex.practicum.filmorate.validate.FilmValidate;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @Qualifier("FilmDbService")
+@Slf4j
 public class FilmDbService implements FilmService {
     private final FilmStorage filmStorage;
+    private final GenreDbStorage genreDbStorage;
+    private final FilmValidate filmValidate;
+    private final MpaRatingDbStorage mpaRatingDbStorage;
 
-    public FilmDbService(@Qualifier("FilmDbStorage") FilmStorage filmStorage) {
+    @Autowired
+    public FilmDbService(@Qualifier("FilmDbStorage") FilmStorage filmStorage, GenreDbStorage genreDbStorage, FilmValidate filmValidate, MpaRatingDbStorage mpaRatingDbStorage) {
         this.filmStorage = filmStorage;
+        this.genreDbStorage = genreDbStorage;
+        this.filmValidate = filmValidate;
+        this.mpaRatingDbStorage = mpaRatingDbStorage;
     }
 
     @Override
     public Film create(Film film) {
-        return filmStorage.create(film);
+        MpaRating mpa = mpaRatingDbStorage.getMpaRating(film.getMpa().getId());
+        film.setMpa(mpa);
+
+        filmValidate.validRelease(film);
+        log.info("Film {} успешно прошел валидацию на дату.", film.getName());
+
+        // Получаем список жанров у фильма
+        List<Genre> genres = film.getGenres();
+
+        filmStorage.create(film);
+        genreDbStorage.setGenresToFilm(film.getId(), genres);
+
+
+        return film;
+
+
+//        List<Genre> genres = film.getGenres();
+//        Set<Genre> list = genres.stream()
+//                .map(genre -> genreDbStorage.getGenreById(genre.getId()))
+//                .collect(Collectors.toSet());
+//        list.stream().map(Genre::getId).forEach(genreId -> update(setGenreQuery, genreId, film.getId()));
+
     }
 
     @Override
@@ -34,7 +73,10 @@ public class FilmDbService implements FilmService {
 
     @Override
     public Film getById(Long filmId) {
-        return filmStorage.getById(filmId);
+        Film film = filmStorage.getById(filmId);
+        List<Genre> genres = genreDbStorage.getGenresFilmById(filmId);
+        film.setGenres(genres);
+        return film;
     }
 
     @Override

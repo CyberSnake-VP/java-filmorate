@@ -24,11 +24,6 @@ import java.util.stream.Collectors;
 @Slf4j
 public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
 
-    private final GenreDbStorage genreDbStorage;
-    private final FilmValidate filmValidate;
-    private final MapRatingDbService mapRatingDbService;
-
-    // Не проходит checkstyle в github, GET_ALL_QUERY ругался...
     private final String getAllQuery =
             "SELECT f.*, r.mpa_name " +
                     "FROM films AS f JOIN mpa_rating AS r ON f.mpa_rating_id = r.mpa_rating_id";
@@ -67,21 +62,14 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
                     "ORDER BY COUNT(l.USER_ID) desc " +
                     "LIMIT ?";
 
-    private final String setGenreQuery = "INSERT INTO films_genres (genre_id, film_id) VALUES(?, ?)";
 
-    public FilmDbStorage(JdbcTemplate jdbc, RowMapper<Film> mapper, GenreDbStorage genreDbStorage, MapRatingDbService mapRatingDbService) {
+
+    public FilmDbStorage(JdbcTemplate jdbc, RowMapper<Film> mapper) {
         super(jdbc, mapper);
-        this.genreDbStorage = genreDbStorage;
-        this.filmValidate = new FilmValidate();
-        this.mapRatingDbService = mapRatingDbService;
     }
 
     @Override
     public Film create(Film film) {
-
-        MpaRating mpa = mapRatingDbService.getMpaRating(film.getMpa().getId());
-        film.setMpa(mpa);
-
         long id = insert(
                 insertQuery,
                 film.getName(),
@@ -91,17 +79,6 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
                 film.getMpa().getId()
         );
         film.setId(id);
-
-        filmValidate.validRelease(film);
-        log.info("Film {} успешно прошел валидацию на дату.", film.getName());
-
-        if (Objects.nonNull(film.getGenres())) {
-            List<Genre> genres = film.getGenres();
-            Set<Genre> list = genres.stream()
-                    .map(genre -> genreDbStorage.getGenreById(genre.getId()))
-                    .collect(Collectors.toSet());
-            list.stream().map(Genre::getId).forEach(genreId -> update(setGenreQuery, genreId, film.getId()));
-        }
         log.info("Film {} успешно записан.", film.getName());
         return film;
     }
@@ -131,8 +108,6 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
     public Film getById(Long filmId) {
         log.info("Получение фильма с id {}.", filmId);
         Film film = findOne(getByIdQuery, filmId);
-        List<Genre> genres = genreDbStorage.getGenresFilmById(filmId);
-        film.setGenres(genres);
         log.info("Film {} успешно получен.>.", film.getName());
         return film;
     }
