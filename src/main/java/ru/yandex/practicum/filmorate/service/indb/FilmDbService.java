@@ -38,13 +38,13 @@ public class FilmDbService implements FilmService {
     }
 
     @Override
-    public Film addLike(Long film_id, Long userId) {
-        return filmStorage.addLike(film_id, userId);
+    public Film addLike(Long filmId, Long userId) {
+        return filmStorage.addLike(filmId, userId);
     }
 
     @Override
-    public Film deleteLike(Long film_id, Long userId) {
-        return filmStorage.deleteLike(film_id, userId);
+    public Film deleteLike(Long filmId, Long userId) {
+        return filmStorage.deleteLike(filmId, userId);
     }
 
     @Override
