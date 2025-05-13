@@ -28,13 +28,6 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
     private final FilmValidate filmValidate;
     private final MapRatingDbService mapRatingDbService;
 
-    public FilmDbStorage(JdbcTemplate jdbc, RowMapper<Film> mapper, GenreDbStorage genreDbStorage, MapRatingDbService mapRatingDbService) {
-        super(jdbc, mapper);
-        this.genreDbStorage = genreDbStorage;
-        this.filmValidate = new FilmValidate();
-        this.mapRatingDbService = mapRatingDbService;
-    }
-
     private final String GET_ALL_QUERY =
             "SELECT f.*, r.mpa_name " +
                     "FROM films AS f JOIN mpa_rating AS r ON f.mpa_rating_id = r.mpa_rating_id";
@@ -74,6 +67,14 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
                     "LIMIT ?";
 
     private final String SET_GENRE_QUERY = "INSERT INTO films_genres (genre_id, film_id) VALUES(?, ?)";
+
+
+    public FilmDbStorage(JdbcTemplate jdbc, RowMapper<Film> mapper, GenreDbStorage genreDbStorage, MapRatingDbService mapRatingDbService) {
+        super(jdbc, mapper);
+        this.genreDbStorage = genreDbStorage;
+        this.filmValidate = new FilmValidate();
+        this.mapRatingDbService = mapRatingDbService;
+    }
 
     @Override
     public Film create(Film film) {
@@ -137,30 +138,30 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
     }
 
     @Override
-    public Film addLike(Long film_id, Long userId) {
-        log.info("Добавление лайка фильму с id {} от пользователя с id {}.", film_id, userId);
+    public Film addLike(Long filmId, Long userId) {
+        log.info("Добавление лайка фильму с id {} от пользователя с id {}.", filmId, userId);
         update(
                 ADD_LIKE_QUERY,
-                film_id,
+                filmId,
                 userId
         );
-        log.info("Лайк успешно добавлен для фильма с id {} от пользователя c id {}", film_id, userId);
-        return findOne(GET_BY_ID_QUERY, film_id);
+        log.info("Лайк успешно добавлен для фильма с id {} от пользователя c id {}", filmId, userId);
+        return findOne(GET_BY_ID_QUERY, filmId);
     }
 
     @Override
-    public Film deleteLike(Long film_id, Long userId) {
-        log.info("Удаление лайка у фильма с id {} от пользователя с id {}.", film_id, userId);
+    public Film deleteLike(Long filmId, Long userId) {
+        log.info("Удаление лайка у фильма с id {} от пользователя с id {}.", filmId, userId);
         boolean success = delete(
                 DELETE_LIKE_QUERY,
-                film_id,
+                filmId,
                 userId
         );
         if (success) {
-            log.info("Удаление лайка у фильма с id {} от пользователя c id {} прошло успешно.", film_id, userId);
-            return findOne(GET_BY_ID_QUERY, film_id);
+            log.info("Удаление лайка у фильма с id {} от пользователя c id {} прошло успешно.", filmId, userId);
+            return findOne(GET_BY_ID_QUERY, filmId);
         } else {
-            log.warn("Произошла ошибка при удалении лайка у фильма с id {}.", film_id);
+            log.warn("Произошла ошибка при удалении лайка у фильма с id {}.", filmId);
             throw new InternalServerException("Удаление не удалось.");
         }
     }
