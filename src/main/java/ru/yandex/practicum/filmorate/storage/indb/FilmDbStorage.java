@@ -28,16 +28,17 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
     private final FilmValidate filmValidate;
     private final MapRatingDbService mapRatingDbService;
 
-    private final String GET_ALL_QUERY =
+    // Не проходит checkstyle в github, GET_ALL_QUERY ругался...
+    private final String getAllQuery =
             "SELECT f.*, r.mpa_name " +
                     "FROM films AS f JOIN mpa_rating AS r ON f.mpa_rating_id = r.mpa_rating_id";
 
 
-    private final String INSERT_QUERY =
+    private final String insertQuery =
             "INSERT INTO films(name, description, release_date, duration, mpa_rating_id)" +
                     "VALUES(?, ?, ?, ?, ?)";
 
-    private final String UPDATE_QUERY =
+    private final String updateQuery =
             "UPDATE films SET " +
                     "name = ?, " +
                     "description = ?, " +
@@ -46,18 +47,18 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
                     "mpa_rating_id = ? " +
                     "WHERE film_id = ?";
 
-    private final String GET_BY_ID_QUERY =
+    private final String getByIdQuery =
             "SELECT f.*, r.mpa_name " +
                     "FROM films AS f JOIN mpa_rating AS r ON f.mpa_rating_id = r.mpa_rating_id " +
                     "WHERE f.film_id = ? ";
 
-    private final String ADD_LIKE_QUERY = "INSERT INTO likes (film_id, user_id) VALUES(?, ?)";
+    private final String addLikeQuery = "INSERT INTO likes (film_id, user_id) VALUES(?, ?)";
 
-    private final String DELETE_LIKE_QUERY =
+    private final String deleteLikeQuery =
             "DELETE FROM likes WHERE " +
                     "film_id = ? AND user_id = ?";
 
-    private final String GET_POPULAR_FILM =
+    private final String getPopularQuery =
             "SELECT f.*, mr.mpa_name " +
                     "FROM films AS f " +
                     "JOIN mpa_rating AS mr ON f.mpa_rating_id = mr.mpa_rating_id " +
@@ -66,8 +67,7 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
                     "ORDER BY COUNT(l.USER_ID) desc " +
                     "LIMIT ?";
 
-    private final String SET_GENRE_QUERY = "INSERT INTO films_genres (genre_id, film_id) VALUES(?, ?)";
-
+    private final String setGenreQuery = "INSERT INTO films_genres (genre_id, film_id) VALUES(?, ?)";
 
     public FilmDbStorage(JdbcTemplate jdbc, RowMapper<Film> mapper, GenreDbStorage genreDbStorage, MapRatingDbService mapRatingDbService) {
         super(jdbc, mapper);
@@ -83,7 +83,7 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
         film.setMpa(mpa);
 
         long id = insert(
-                INSERT_QUERY,
+                insertQuery,
                 film.getName(),
                 film.getDescription(),
                 film.getReleaseDate(),
@@ -100,7 +100,7 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
             Set<Genre> list = genres.stream()
                     .map(genre -> genreDbStorage.getGenreById(genre.getId()))
                     .collect(Collectors.toSet());
-            list.stream().map(Genre::getId).forEach(genreId -> update(SET_GENRE_QUERY, genreId, film.getId()));
+            list.stream().map(Genre::getId).forEach(genreId -> update(setGenreQuery, genreId, film.getId()));
         }
         log.info("Film {} успешно записан.", film.getName());
         return film;
@@ -109,7 +109,7 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
     @Override
     public Film update(Film newFilm) {
         update(
-                UPDATE_QUERY,
+                updateQuery,
                 newFilm.getName(),
                 newFilm.getDescription(),
                 newFilm.getReleaseDate(),
@@ -124,13 +124,13 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
     @Override
     public Collection<Film> getAll() {
         log.info("Получение списка фильмов.");
-        return findMany(GET_ALL_QUERY);
+        return findMany(getAllQuery);
     }
 
     @Override
     public Film getById(Long filmId) {
         log.info("Получение фильма с id {}.", filmId);
-        Film film = findOne(GET_BY_ID_QUERY, filmId);
+        Film film = findOne(getByIdQuery, filmId);
         List<Genre> genres = genreDbStorage.getGenresFilmById(filmId);
         film.setGenres(genres);
         log.info("Film {} успешно получен.>.", film.getName());
@@ -141,25 +141,25 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
     public Film addLike(Long filmId, Long userId) {
         log.info("Добавление лайка фильму с id {} от пользователя с id {}.", filmId, userId);
         update(
-                ADD_LIKE_QUERY,
+                addLikeQuery,
                 filmId,
                 userId
         );
         log.info("Лайк успешно добавлен для фильма с id {} от пользователя c id {}", filmId, userId);
-        return findOne(GET_BY_ID_QUERY, filmId);
+        return findOne(getByIdQuery, filmId);
     }
 
     @Override
     public Film deleteLike(Long filmId, Long userId) {
         log.info("Удаление лайка у фильма с id {} от пользователя с id {}.", filmId, userId);
         boolean success = delete(
-                DELETE_LIKE_QUERY,
+                deleteLikeQuery,
                 filmId,
                 userId
         );
         if (success) {
             log.info("Удаление лайка у фильма с id {} от пользователя c id {} прошло успешно.", filmId, userId);
-            return findOne(GET_BY_ID_QUERY, filmId);
+            return findOne(getByIdQuery, filmId);
         } else {
             log.warn("Произошла ошибка при удалении лайка у фильма с id {}.", filmId);
             throw new InternalServerException("Удаление не удалось.");
@@ -169,7 +169,7 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
     @Override
     public Collection<Film> getPopular(Long count) {
         log.info("Получение списка популярных фильма количеством {}.", count);
-        return findMany(GET_POPULAR_FILM, count);
+        return findMany(getPopularQuery, count);
     }
 
 }
