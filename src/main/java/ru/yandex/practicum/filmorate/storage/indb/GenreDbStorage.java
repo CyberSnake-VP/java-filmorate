@@ -44,8 +44,8 @@ public class GenreDbStorage extends BaseDbStorage<Genre> implements GenreStorage
     }
 
     @Override
-    public List<Genre> getGenresFilmById(Long id) {
-        return findMany(getGenreFilm, id);
+    public List<Genre> getGenresFilmById(Long filmId) {
+        return findMany(getGenreFilm, filmId);
     }
 
     @Override
@@ -58,11 +58,10 @@ public class GenreDbStorage extends BaseDbStorage<Genre> implements GenreStorage
         }
         List<Object[]> params = new ArrayList<>();
         genresSet.forEach(genreId ->
-            params.add(new Object[]{genreId, filmId})  // Подготавливаем массив объектов для butchUpdate
+                params.add(new Object[]{genreId, filmId})  // Подготавливаем массив объектов для butchUpdate
         );
-
+        // Используем метод пакетной обработки, для записи жанров в таблицу films_genres
         jdbc.batchUpdate(setGenreQuery, params);
         log.info("Жанры успешно добавлены в фильм с id {}", filmId);
     }
-
 }

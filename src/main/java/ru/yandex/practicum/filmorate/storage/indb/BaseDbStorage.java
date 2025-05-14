@@ -24,7 +24,7 @@ public class BaseDbStorage<T> {
         try {
             return jdbc.queryForObject(query, mapper, params);
         } catch (DataAccessException e) {
-            throw new NotFoundException("Не удалось получить данные.");
+            throw new NotFoundException("Ошибка при получении данных, проверьте корректность введенных полей.");
         }
     }
 

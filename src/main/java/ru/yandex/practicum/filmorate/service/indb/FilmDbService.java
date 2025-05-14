@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.MpaRating;
@@ -15,8 +16,7 @@ import ru.yandex.practicum.filmorate.validate.FilmValidate;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.Objects;
 
 @Service
 @Qualifier("FilmDbService")
@@ -43,22 +43,30 @@ public class FilmDbService implements FilmService {
         filmValidate.validRelease(film);
         log.info("Film {} успешно прошел валидацию на дату.", film.getName());
 
+        // Записываем фильм в базу
+        filmStorage.create(film);
+
         // Получаем список жанров у фильма
         List<Genre> genres = film.getGenres();
 
-        filmStorage.create(film);
-        genreDbStorage.setGenresToFilm(film.getId(), genres);
+        /*
+         Записываем в таблицу films_genres жанры фильма если они есть.
+         Получаем список жанров фильма для добавления, получаем список жанров из бд
+         Фильтруем жанры, если список valid не будет пуст и его размер совпадает с исходным,
+         значит все жанры указаны верно.
+         */
+        if (Objects.nonNull(genres)) {
 
+            List<Genre> genreList = genreDbStorage.getAllGenres();
+            List<Genre> validGenres = genres.stream().filter(genreList::contains).toList();
 
-        return film;
-
-
-//        List<Genre> genres = film.getGenres();
-//        Set<Genre> list = genres.stream()
-//                .map(genre -> genreDbStorage.getGenreById(genre.getId()))
-//                .collect(Collectors.toSet());
-//        list.stream().map(Genre::getId).forEach(genreId -> update(setGenreQuery, genreId, film.getId()));
-
+            if (!validGenres.isEmpty() && validGenres.size() == genres.size()) {
+                genreDbStorage.setGenresToFilm(film.getId(), genres);
+            } else {
+                throw new NotFoundException("Не верно указан жанр фильма.");
+            }
+        }
+        return getById(film.getId());
     }
 
     @Override
