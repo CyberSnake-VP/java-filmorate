@@ -7,16 +7,9 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.InternalServerException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.MpaRating;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.validate.FilmValidate;
 
 import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 
 @Repository
@@ -61,7 +54,6 @@ public class FilmDbStorage extends BaseDbStorage<Film> implements FilmStorage {
                     "GROUP BY f.film_id, mr.mpa_name " +
                     "ORDER BY COUNT(l.USER_ID) desc " +
                     "LIMIT ?";
-
 
 
     public FilmDbStorage(JdbcTemplate jdbc, RowMapper<Film> mapper) {

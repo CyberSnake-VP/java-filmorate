@@ -9,7 +9,8 @@ public interface GenreStorage {
 
     List<Genre> getAllGenres();
 
-    List<Genre> getGenresFilmById(Long id);
+    List<Genre> getGenresFilmById(Long filmId);
 
     void setGenresToFilm(Long filmId, List<Genre> genres);
+
 }
