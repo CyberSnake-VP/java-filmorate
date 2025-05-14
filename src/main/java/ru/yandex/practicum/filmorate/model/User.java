@@ -3,12 +3,13 @@ package ru.yandex.practicum.filmorate.model;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.*;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDate;
-import java.util.HashSet;
 import java.util.Set;
 
 @Data
+@RequiredArgsConstructor
 public class User {
     @Positive(message = "Id должен быть положительным числом.")
     private Long id;
@@ -29,5 +30,5 @@ public class User {
     private LocalDate birthday;
 
     // Список друзей
-    private final Set<Long> friends = new HashSet<>();
+    private Set<Long> friends;
 }
