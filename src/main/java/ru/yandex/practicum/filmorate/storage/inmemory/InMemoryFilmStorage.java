@@ -1,17 +1,19 @@
-package ru.yandex.practicum.filmorate.storage.film;
+package ru.yandex.practicum.filmorate.storage.inmemory;
 
+import jakarta.validation.ValidationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.validate.FilmValidate;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @Slf4j
 @Repository
+@Qualifier("InMemoryFilmStorage")
 @RequiredArgsConstructor
 public class InMemoryFilmStorage implements FilmStorage {
 
@@ -74,6 +76,55 @@ public class InMemoryFilmStorage implements FilmStorage {
         validate.isExist(films.containsKey(filmId), filmId);
         log.info("Пользователь успешно получен.");
         return films.get(filmId);
+    }
+
+    @Override
+    public Film addLike(Long id, Long userId) {
+        log.info("Пользователь с id {} ставит лайк.", userId);
+        log.debug("Проверяем есть ли пользователь.");
+        getById(userId);
+        Film film = getById(id);
+        log.debug("Проверяем ставил ли пользователь лайк.");
+        if (film.getLikes().contains(userId)) {
+            String errorString = String.format("Пользователь c id %d уже поставил лайк данному фильму.", userId);
+            log.warn(errorString);
+            throw new ValidationException(errorString);
+        }
+        log.debug("Добавляем лайк.");
+        film.getLikes().add(userId);
+
+        return film;
+    }
+
+    @Override
+    public Film deleteLike(Long id, Long userId) {
+        log.info("Пользователь с id {} удаляет лайк.", userId);
+        getById(userId);
+        Film film = getById(id);
+        log.debug("Проверяем существует ли лайк, от пользователя.");
+        if (!film.getLikes().contains(userId)) {
+            String errorString = String.format("Пользователь c id %d не ставил лайк данному фильму.", userId);
+            log.warn(errorString);
+            throw new ValidationException(errorString);
+        }
+        log.debug("Удаляем лайк.");
+        film.getLikes().remove(userId);
+
+        return film;
+    }
+
+    @Override
+    public Collection<Film> getPopular(Long count) {
+        log.info("Получение списка {} популярных фильмов.", count);
+
+        // Используем интерфейс компаратор, для сортировки по количеству лайков. Ограничиваем кол-во указанным count
+        List<Film> films = getAll().stream()
+                .sorted(Comparator.comparing(film -> film.getLikes().size()))
+                .toList();
+        log.debug("Возвращаемое количество фильмов {}", count);
+        return films.reversed().stream()
+                .limit(10)
+                .toList();
     }
 
     private Long getNextId() {
